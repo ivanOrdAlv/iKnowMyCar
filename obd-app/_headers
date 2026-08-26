@@ -1,0 +1,27 @@
+# Netlify custom headers
+# Permite Web Bluetooth y Geolocation en la app
+# Docs: https://docs.netlify.com/routing/headers/
+
+/*
+  Permissions-Policy: bluetooth=(self), geolocation=(self), camera=(), microphone=()
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Cache agresivo para iconos (no cambian nunca)
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache medio para CSS y JS
+/css/*
+  Cache-Control: public, max-age=86400
+
+/js/*
+  Cache-Control: public, max-age=86400
+
+# Service Worker: nunca cachear en el navegador
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Manifest: cache corto
+/manifest.json
+  Cache-Control: public, max-age=86400

@@ -95,7 +95,7 @@ const SettingsView = (() => {
       </div>
 
       <!-- ACERCA DE -->
-      <div class="settings-section-title">ACERCA DE TELEMDRIVE</div>
+      <div class="settings-section-title">ACERCA DE IKNOWMYCAR</div>
       <div class="settings-card">
         ${settingRow('Versión', '1.3.0 (Racing Build)', 'none')}
         ${settingRow('Motor', 'Web Bluetooth + OBD-II', 'none')}
@@ -473,7 +473,7 @@ const SettingsView = (() => {
         const blob = new Blob([json], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'telemdrive_settings.json';
+        a.download = 'iknowmycar_settings.json';
         a.click();
       });
     }
@@ -614,7 +614,7 @@ const SettingsView = (() => {
         const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'telemdrive_all_routes.json';
+        a.download = 'iknowmycar_all_routes.json';
         a.click();
       });
     }

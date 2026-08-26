@@ -1,6 +1,6 @@
 {
-  "name": "TelemDrive - OBD-II Racing",
-  "short_name": "TelemDrive",
+  "name": "iKnowMyCar - OBD-II Telemetry",
+  "short_name": "iKnowMyCar",
   "description": "Telemetría OBD-II en tiempo real con dashboard racing, grabación de rutas, diagnóstico y modo HUD",
   "start_url": "/index.html",
   "display": "standalone",

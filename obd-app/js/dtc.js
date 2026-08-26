@@ -95,14 +95,13 @@ const DTCView = (() => {
   }
 
   async function clearDTCs() {
-    const modalEl = document.getElementById('modal-confirm');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const modal = document.getElementById('modal-confirm');
     document.getElementById('confirm-title').textContent = 'BORRAR ECU';
     document.getElementById('confirm-message').textContent = '¿Limpiar todos los códigos de error?';
-    modal.show();
+    modal.classList.remove('hidden');
 
     const cleanup = () => {
-      modal.hide();
+      modal.classList.add('hidden');
       document.getElementById('btn-confirm-ok').replaceWith(document.getElementById('btn-confirm-ok').cloneNode(true));
       document.getElementById('btn-confirm-cancel').replaceWith(document.getElementById('btn-confirm-cancel').cloneNode(true));
     };

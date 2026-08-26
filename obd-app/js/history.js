@@ -709,24 +709,22 @@ const HistoryView = (() => {
   }
 
   function showRenameModal(tripId) {
-    const modalEl = document.getElementById('modal-rename');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const modal = document.getElementById('modal-rename');
     const input = document.getElementById('rename-input');
-    modal.show();
+    modal.classList.remove('hidden');
     input.value = '';
-    modalEl.addEventListener('shown.bs.modal', () => input.focus(), { once: true });
-    const cleanup = () => { modal.hide(); document.getElementById('btn-rename-confirm').replaceWith(document.getElementById('btn-rename-confirm').cloneNode(true)); document.getElementById('btn-rename-cancel').replaceWith(document.getElementById('btn-rename-cancel').cloneNode(true)); };
+    input.focus();
+    const cleanup = () => { modal.classList.add('hidden'); document.getElementById('btn-rename-confirm').replaceWith(document.getElementById('btn-rename-confirm').cloneNode(true)); document.getElementById('btn-rename-cancel').replaceWith(document.getElementById('btn-rename-cancel').cloneNode(true)); };
     document.getElementById('btn-rename-confirm').addEventListener('click', async () => { const n = input.value.trim(); if (n) await TripStorage.updateTripName(tripId, n); cleanup(); render(); });
     document.getElementById('btn-rename-cancel').addEventListener('click', cleanup);
   }
 
   function showConfirm(title, msg, onConfirm) {
-    const modalEl = document.getElementById('modal-confirm');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    const modal = document.getElementById('modal-confirm');
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-message').textContent = msg;
-    modal.show();
-    const cleanup = () => { modal.hide(); document.getElementById('btn-confirm-ok').replaceWith(document.getElementById('btn-confirm-ok').cloneNode(true)); document.getElementById('btn-confirm-cancel').replaceWith(document.getElementById('btn-confirm-cancel').cloneNode(true)); };
+    modal.classList.remove('hidden');
+    const cleanup = () => { modal.classList.add('hidden'); document.getElementById('btn-confirm-ok').replaceWith(document.getElementById('btn-confirm-ok').cloneNode(true)); document.getElementById('btn-confirm-cancel').replaceWith(document.getElementById('btn-confirm-cancel').cloneNode(true)); };
     document.getElementById('btn-confirm-ok').addEventListener('click', () => { cleanup(); onConfirm(); });
     document.getElementById('btn-confirm-cancel').addEventListener('click', cleanup);
   }

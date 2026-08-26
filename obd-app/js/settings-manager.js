@@ -7,7 +7,7 @@
  */
 
 const SettingsManager = (() => {
-  const STORAGE_KEY = 'telemdrive_settings';
+  const STORAGE_KEY = 'iknowmycar_settings';
 
   // Valores por defecto de todos los ajustes
   const DEFAULTS = {

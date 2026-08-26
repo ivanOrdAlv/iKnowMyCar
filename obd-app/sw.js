@@ -1,5 +1,5 @@
 /**
- * TelemDrive Service Worker
+ * iKnowMyCar Service Worker
  * 
  * Estrategia de caché:
  * - Archivos estáticos (HTML, CSS, JS, iconos): Cache First
@@ -7,9 +7,9 @@
  * - Peticiones BLE/API: Network Only (no cachear datos en vivo)
  */
 
-const CACHE_NAME = 'telemdrive-v1.3.0';
-const STATIC_CACHE = 'telemdrive-static-v1';
-const CDN_CACHE = 'telemdrive-cdn-v1';
+const CACHE_NAME = 'iknowmycar-v1.3.0';
+const STATIC_CACHE = 'iknowmycar-static-v1';
+const CDN_CACHE = 'iknowmycar-cdn-v1';
 
 // Archivos locales a cachear en la instalación
 const STATIC_ASSETS = [
@@ -86,7 +86,7 @@ self.addEventListener('activate', (event) => {
       .then((keys) => {
         return Promise.all(
           keys
-            .filter((key) => key !== STATIC_CACHE && key !== CDN_CACHE && key.startsWith('telemdrive'))
+            .filter((key) => key !== STATIC_CACHE && key !== CDN_CACHE && (key.startsWith('iknowmycar') || key.startsWith('telemdrive')))
             .map((key) => {
               console.log('[SW] Deleting old cache:', key);
               return caches.delete(key);

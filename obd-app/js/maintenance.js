@@ -4,7 +4,7 @@
  */
 
 const MaintenanceManager = (() => {
-  const DB_NAME = 'telemdrive_maintenance';
+  const DB_NAME = 'iknowmycar_maintenance';
   const DB_VERSION = 1;
   const STORE_NAME = 'maintenance';
   let dbInstance = null;

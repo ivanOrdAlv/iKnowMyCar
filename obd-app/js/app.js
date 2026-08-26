@@ -13,16 +13,11 @@ const App = (() => {
     dtc: DTCView,
   };
 
-  // Instancia del modal de conexión de Bootstrap (se crea una vez, se reutiliza)
-  let connectModal = null;
-
   function init() {
     // Navegación
-    document.querySelectorAll('.td-bottom-nav .nav-link').forEach(item => {
+    document.querySelectorAll('.nav-item').forEach(item => {
       item.addEventListener('click', () => navigateTo(item.dataset.page));
     });
-
-    connectModal = new bootstrap.Modal(document.getElementById('modal-connect'));
 
     // Botón Bluetooth
     document.getElementById('btn-connect').addEventListener('click', openConnectModal);
@@ -41,6 +36,11 @@ const App = (() => {
     // Botón HUD
     document.getElementById('btn-hud').addEventListener('click', () => HUDView.render());
 
+    // Cerrar modal
+    document.getElementById('modal-connect').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-connect') closeConnectModal();
+    });
+
     navigateTo('dashboard');
   }
 
@@ -49,25 +49,28 @@ const App = (() => {
       views[currentPage].destroy();
     }
     currentPage = page;
-    document.querySelectorAll('.td-bottom-nav .nav-link').forEach(item => {
+    document.querySelectorAll('.nav-item').forEach(item => {
       item.classList.toggle('active', item.dataset.page === page);
     });
-    document.getElementById('bottom-nav').classList.remove('d-none');
-    document.getElementById('bottom-nav').classList.add('d-flex');
-    document.getElementById('app-header').classList.remove('d-none');
-    document.getElementById('app-header').classList.add('d-flex');
+    // Show bottom nav and header again
+    document.getElementById('bottom-nav').style.display = 'flex';
+    document.getElementById('app-header').style.display = 'flex';
     if (views[page]) views[page].render();
   }
 
   function openConnectModal() {
-    document.getElementById('connect-log').innerHTML = '';
+    const modal = document.getElementById('modal-connect');
+    const log = document.getElementById('connect-log');
+    log.innerHTML = '';
+    modal.classList.remove('hidden');
+
+    // Actualizar texto del botón según estado
     const btn = document.getElementById('btn-scan');
     btn.textContent = OBDManager.isConnected ? 'DESCONECTAR' : 'BUSCAR DISPOSITIVO';
-    connectModal.show();
   }
 
   function closeConnectModal() {
-    connectModal.hide();
+    document.getElementById('modal-connect').classList.add('hidden');
   }
 
   async function handleConnect() {

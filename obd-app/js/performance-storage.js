@@ -3,7 +3,7 @@
  */
 
 const PerformanceStorage = (() => {
-  const STORAGE_KEY = 'telemdrive_performance';
+  const STORAGE_KEY = 'iknowmycar_performance';
 
   function load() {
     try {
