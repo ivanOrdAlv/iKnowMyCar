@@ -1,7 +1,7 @@
 # 🚗 iKnowMyCar
 
 <p align="center">
-  <img src="logo.png" alt="iKnowMyCar Logo" width="250">
+  <img src="[logo.png](https://github.com/ivanOrdAlv/iKnowMyCar/blob/main/obd-app/icons/icon-152x152.png)" alt="iKnowMyCar Logo" width="250">
 </p>
 
 <p align="center">
