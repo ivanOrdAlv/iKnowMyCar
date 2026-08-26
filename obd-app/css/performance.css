@@ -1,0 +1,348 @@
+/* ============================================
+   PERFORMANCE VIEW
+   ============================================ */
+
+/* Menu */
+.perf-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.perf-menu-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent-green);
+  border-radius: 2px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.perf-menu-card:hover {
+  background: var(--bg-card-hover);
+  border-left-color: #FFF;
+}
+
+.perf-menu-icon {
+  font-size: 32px;
+  width: 48px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.perf-menu-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #FFF;
+  letter-spacing: 1px;
+}
+
+.perf-menu-desc {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.perf-menu-best {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--accent-green);
+  font-family: monospace;
+  white-space: nowrap;
+}
+
+/* Performance records list */
+.perf-record-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #0a0a0a;
+}
+
+.perf-record-row:last-child { border-bottom: none; }
+
+.perf-record-type {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+}
+
+.perf-record-info { flex: 1; }
+
+.perf-record-label {
+  font-size: 13px;
+  font-weight: 900;
+  color: #CCC;
+}
+
+.perf-record-date {
+  font-size: 10px;
+  color: #444;
+  margin-top: 2px;
+}
+
+.perf-record-value {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--accent-green);
+  font-family: monospace;
+}
+
+/* ============================================
+   G-METER
+   ============================================ */
+
+.gmeter-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gmeter-ring {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 10px 0 20px;
+}
+
+.gmeter-values {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.gmeter-value-box {
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  padding: 14px 24px;
+}
+
+.gmeter-value-label {
+  font-size: 9px;
+  font-weight: 900;
+  color: #444;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.gmeter-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #FFF;
+  font-family: monospace;
+}
+
+.gmeter-value-unit {
+  font-size: 10px;
+  color: #333;
+  font-weight: 900;
+}
+
+.gmeter-max-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.gmeter-max {
+  flex: 1;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  padding: 10px 6px;
+}
+
+.gmeter-max-label {
+  display: block;
+  font-size: 8px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.gmeter-max-value {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--accent-green);
+  font-family: monospace;
+}
+
+/* ============================================
+   ACCELERATION / QUARTER MILE
+   ============================================ */
+
+.accel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.accel-target-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.accel-target-btn {
+  background: #111;
+  border: 1px solid #222;
+  color: #666;
+  padding: 10px 24px;
+  border-radius: 2px;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+
+.accel-target-btn:hover { border-color: #444; color: #AAA; }
+.accel-target-btn.active { border-color: var(--accent-green); color: var(--accent-green); background: rgba(0,255,65,0.05); }
+
+.accel-display {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.accel-time {
+  font-size: 72px;
+  font-weight: 900;
+  color: #FFF;
+  font-family: 'SF Mono', monospace;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.accel-time-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+
+.accel-speed-display {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.accel-speed {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--accent-green);
+  font-family: monospace;
+  line-height: 1;
+}
+
+.accel-speed-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 3px;
+}
+
+.accel-stats-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.accel-stat {
+  flex: 1;
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  padding: 12px;
+}
+
+.accel-stat-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: #FFF;
+  font-family: monospace;
+}
+
+.accel-stat-label {
+  font-size: 8px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+.accel-instruction {
+  font-size: 11px;
+  font-weight: 900;
+  color: #444;
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 16px;
+  min-height: 20px;
+}
+
+/* Quarter mile progress bar */
+.quarter-progress {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.quarter-progress-bar {
+  height: 8px;
+  background: var(--accent-green);
+  border-radius: 4px;
+  transition: width 0.2s ease;
+  position: relative;
+}
+
+.quarter-progress-bar::after {
+  content: '🏁';
+  position: absolute;
+  right: -10px;
+  top: -8px;
+  font-size: 16px;
+}
+
+.quarter-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 8px;
+  font-weight: 900;
+  color: #333;
+  letter-spacing: 0.5px;
+}
+
+/* Background for the progress bar */
+.quarter-progress {
+  background: #111;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+/* Header button for performance */
+.btn-performance {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.btn-performance:hover {
+  opacity: 1;
+}

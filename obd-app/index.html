@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>TelemDrive - OBD-II Racing</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- iOS PWA support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TelemDrive">
+  <link rel="apple-touch-icon" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-192x192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16x16.png">
+
+  <!-- Microsoft -->
+  <meta name="msapplication-TileColor" content="#000000">
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- Bootstrap 5 (CSS) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- Tema oscuro racing sobre Bootstrap -->
+  <link rel="stylesheet" href="css/theme.css">
+  <!-- Widgets propios sin equivalente en Bootstrap (HUD, G-meter, etc.) -->
+  <link rel="stylesheet" href="css/performance.css">
+  <link rel="stylesheet" href="css/hud.css">
+
+  <!-- Chart.js para gráficas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body class="d-flex flex-column vh-100 overflow-hidden">
+
+  <!-- Barra superior -->
+  <header id="app-header" class="td-navbar d-flex align-items-center justify-content-between px-3 flex-shrink-0">
+    <span class="navbar-brand mb-0">TELEMDRIVE</span>
+    <div class="d-flex align-items-center gap-1">
+      <span id="connection-status" class="td-status-badge disconnected rounded-pill">
+        <span class="dot"></span> OFFLINE
+      </span>
+      <button id="btn-connect" class="btn-icon" title="Conectar ELM327">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M6.5 6.5l11 11M6.5 17.5l11-11M12 2v4M12 18v4M2 12h4M18 12h4"/>
+        </svg>
+      </button>
+      <button id="btn-vehicle" class="btn-icon" title="Mi vehículo">🚗</button>
+      <button id="btn-performance" class="btn-icon" title="Performance">⏱️</button>
+      <button id="btn-hud" class="btn-icon" title="Modo HUD">🪞</button>
+      <button id="btn-settings" class="btn-icon" title="Ajustes">⚙</button>
+    </div>
+  </header>
+
+  <!-- Contenido principal (SPA) -->
+  <main id="app-content" class="flex-grow-1 overflow-auto p-3">
+    <!-- Las vistas se renderizan aquí dinámicamente -->
+  </main>
+
+  <!-- Barra de navegación inferior -->
+  <nav id="bottom-nav" class="td-bottom-nav d-flex justify-content-around align-items-center flex-shrink-0">
+    <button class="nav-link active border-0 bg-transparent" data-page="dashboard">
+      <span class="nav-item-icon">⦿</span>
+      <span>LIVE</span>
+    </button>
+    <button class="nav-link border-0 bg-transparent" data-page="route">
+      <span class="nav-item-icon">⟴</span>
+      <span>TRACK</span>
+    </button>
+    <button class="nav-link border-0 bg-transparent" data-page="racing">
+      <span class="nav-item-icon">⚡</span>
+      <span>RACE</span>
+    </button>
+    <button class="nav-link border-0 bg-transparent" data-page="history">
+      <span class="nav-item-icon">▤</span>
+      <span>HISTORY</span>
+    </button>
+    <button class="nav-link border-0 bg-transparent" data-page="dtc">
+      <span class="nav-item-icon">⚠</span>
+      <span>ECU</span>
+    </button>
+  </nav>
+
+  <!-- Modal de conexión BLE (Bootstrap modal) -->
+  <div id="modal-connect" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-secondary-subtle">
+          <h5 class="modal-title td-mono">CONEXIÓN OBD</h5>
+          <button type="button" id="btn-modal-close" class="btn-close btn-close-white"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-secondary small">Busca tu adaptador ELM327 BLE y selecciónalo.</p>
+          <div id="connect-log" class="connect-log bg-black rounded p-2 small td-mono" style="max-height:180px; overflow-y:auto;"></div>
+        </div>
+        <div class="modal-footer border-secondary-subtle">
+          <button id="btn-scan" class="btn btn-success fw-bold">BUSCAR DISPOSITIVO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de renombrar -->
+  <div id="modal-rename" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-secondary-subtle">
+          <h5 class="modal-title td-mono">RENOMBRAR SESIÓN</h5>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="rename-input" class="form-control" placeholder="Nombre de la sesión..." />
+        </div>
+        <div class="modal-footer border-secondary-subtle">
+          <button id="btn-rename-cancel" class="btn btn-outline-secondary">CANCELAR</button>
+          <button id="btn-rename-confirm" class="btn btn-success fw-bold">GUARDAR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal confirmación -->
+  <div id="modal-confirm" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-secondary-subtle">
+          <h5 class="modal-title td-mono" id="confirm-title">CONFIRMAR</h5>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-message" class="mb-0"></p>
+        </div>
+        <div class="modal-footer border-secondary-subtle">
+          <button id="btn-confirm-cancel" class="btn btn-outline-secondary">CANCELAR</button>
+          <button id="btn-confirm-ok" class="btn btn-success fw-bold">ACEPTAR</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 (JS bundle, incluye Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Scripts de la app -->
+  <script src="js/obd-parser.js"></script>
+  <script src="js/obd-manager.js"></script>
+  <script src="js/fuel-estimator.js"></script>
+  <script src="js/event-detector.js"></script>
+  <script src="js/dtc-data.js"></script>
+  <script src="js/trip-storage.js"></script>
+  <script src="js/location-tracker.js"></script>
+  <script src="js/settings-manager.js"></script>
+  <script src="js/performance-storage.js"></script>
+  <script src="js/performance-view.js"></script>
+  <script src="js/hud-view.js"></script>
+  <script src="js/vehicle-profile.js"></script>
+  <script src="js/maintenance.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/route.js"></script>
+  <script src="js/racing.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/dtc.js"></script>
+  <script src="js/vehicle-view.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Service Worker Registration + URL Params -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => {
+            console.log('[PWA] Service Worker registrado:', reg.scope);
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] Nueva versión disponible');
+                }
+              });
+            });
+          })
+          .catch(err => console.warn('[PWA] SW error:', err));
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('hud') === '1') {
+        setTimeout(() => { if (typeof HUDView !== 'undefined') HUDView.render(); }, 300);
+        return;
+      }
+      const page = params.get('page');
+      if (page && typeof App !== 'undefined') {
+        setTimeout(() => App.navigateTo(page), 300);
+      }
+    });
+  </script>
+</body>
+</html>

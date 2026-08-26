@@ -1,0 +1,305 @@
+/* ============================================================
+   TELEMDRIVE — TEMA OSCURO SOBRE BOOTSTRAP 5
+   ============================================================
+   Bootstrap aporta grid, formularios, modales y componentes.
+   Este archivo redefine las variables de Bootstrap con la
+   paleta racing (negro + verde neón) que ya tenía la app,
+   y añade los pocos widgets que Bootstrap no cubre
+   (telemetry bars, HUD, rev-limiter, G-meter).
+   ============================================================ */
+
+:root,
+[data-bs-theme="dark"] {
+  /* Paleta base (idéntica a la que ya usabas) */
+  --td-bg: #000000;
+  --td-bg-elev: #050505;
+  --td-card: #0a0a0a;
+  --td-card-hover: #101010;
+  --td-border: #1a1a1a;
+  --td-text: #ffffff;
+  --td-text-muted: #6b6b6b;
+  --td-text-dim: #3a3a3a;
+
+  --td-green: #00ff41;
+  --td-cyan: #007aff;
+  --td-red: #ff3b30;
+  --td-orange: #ff9500;
+  --td-yellow: #ffd700;
+  --td-purple: #8b5cf6;
+
+  --td-font-display: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+  --td-radius: 4px;
+  --td-nav-height: 60px;
+  --td-header-height: 52px;
+
+  /* --- Overrides de Bootstrap --- */
+  --bs-body-bg: var(--td-bg);
+  --bs-body-color: var(--td-text);
+  --bs-body-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --bs-primary: var(--td-green);
+  --bs-primary-rgb: 0, 255, 65;
+  --bs-secondary: var(--td-cyan);
+  --bs-success: var(--td-green);
+  --bs-danger: var(--td-red);
+  --bs-warning: var(--td-orange);
+  --bs-info: var(--td-cyan);
+
+  --bs-border-color: var(--td-border);
+  --bs-border-radius: var(--td-radius);
+  --bs-border-radius-sm: 2px;
+  --bs-border-radius-lg: 8px;
+
+  --bs-card-bg: var(--td-card);
+  --bs-card-border-color: var(--td-border);
+  --bs-card-cap-bg: var(--td-bg-elev);
+
+  --bs-tertiary-bg: var(--td-bg-elev);
+  --bs-secondary-bg: var(--td-card);
+  --bs-emphasis-color: var(--td-text);
+  --bs-secondary-color: var(--td-text-muted);
+}
+
+html,
+body {
+  background: var(--td-bg);
+  color: var(--td-text);
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+}
+
+/* Números y datos siempre en monoespaciada, como en un salpicadero */
+.td-mono,
+.data-card-value,
+.rec-speed-value,
+.rec-timer,
+.dtc-code {
+  font-family: var(--td-font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   NAVBAR SUPERIOR (Bootstrap navbar + acentos propios)
+   ============================================================ */
+
+.td-navbar {
+  height: var(--td-header-height);
+  background: var(--td-bg-elev);
+  border-bottom: 1px solid var(--td-border);
+}
+
+.td-navbar .navbar-brand {
+  font-family: var(--td-font-display);
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 1rem;
+  color: var(--td-text);
+}
+
+.td-navbar .btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--td-text-muted);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--td-radius);
+  transition: color 0.15s, background 0.15s;
+}
+.td-navbar .btn-icon:hover,
+.td-navbar .btn-icon:focus-visible {
+  color: var(--td-text);
+  background: var(--td-card);
+}
+
+/* ============================================================
+   BOTTOM NAV (barra inferior tipo app nativa)
+   ============================================================ */
+
+.td-bottom-nav {
+  height: var(--td-nav-height);
+  background: var(--td-bg-elev);
+  border-top: 1px solid var(--td-border);
+}
+
+.td-bottom-nav .nav-link {
+  color: var(--td-text-dim);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border-radius: var(--td-radius);
+  transition: color 0.15s;
+}
+
+.td-bottom-nav .nav-link .nav-item-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.td-bottom-nav .nav-link.active {
+  color: var(--td-green);
+}
+
+/* ============================================================
+   TARJETAS DE DATOS (dashboard, resúmenes...)
+   ============================================================ */
+
+.td-data-card {
+  background: var(--td-card);
+  border: 1px solid var(--td-border);
+  border-radius: var(--td-radius);
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.td-data-card .data-card-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--td-text-muted);
+  text-transform: uppercase;
+}
+
+.td-data-card .data-card-value {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.td-data-card .data-card-unit {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--td-text-muted);
+  margin-left: 4px;
+}
+
+.td-data-card .data-card-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+/* Badges de estado (conectado/desconectado) usando Bootstrap badge + color propio */
+.td-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+}
+.td-status-badge .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.td-status-badge.connected { color: var(--td-green); background: rgba(0,255,65,0.08); }
+.td-status-badge.connected .dot { background: var(--td-green); box-shadow: 0 0 6px var(--td-green); }
+.td-status-badge.disconnected { color: var(--td-red); background: rgba(255,59,48,0.08); }
+.td-status-badge.disconnected .dot { background: var(--td-red); }
+
+/* ============================================================
+   BOTÓN DE GRABAR RUTA (grande, circular)
+   ============================================================ */
+
+.td-btn-record {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 4px solid var(--td-red);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.td-btn-record:hover { box-shadow: 0 0 30px rgba(255,59,48,0.35); }
+.td-btn-record:active { transform: scale(0.96); }
+.td-btn-record-inner {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--td-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+}
+
+/* ============================================================
+   TELEMETRY BARS (throttle / brake / rpm en la grabación)
+   ============================================================ */
+
+.td-telemetry-bar { margin-bottom: 0.85rem; }
+.td-telemetry-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--td-text-muted);
+  margin-bottom: 4px;
+}
+.td-telemetry-bar-value { font-family: var(--td-font-display); color: var(--td-text); }
+.td-telemetry-bar-bg {
+  height: 10px;
+  background: var(--td-bg-elev);
+  border-radius: var(--td-radius);
+  overflow: hidden;
+}
+.td-telemetry-bar-fill {
+  height: 100%;
+  border-radius: var(--td-radius);
+  transition: width 0.15s linear;
+}
+
+/* Shift light (avisador de cambio de marcha, ocupa toda la pantalla al activarse) */
+.shift-active { animation: td-shift-pulse 0.4s infinite alternate; }
+@keyframes td-shift-pulse {
+  from { background: var(--td-bg); }
+  to { background: #1a0000; }
+}
+.shift-light {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+.shift-light-text {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--td-red);
+  text-shadow: 0 0 20px var(--td-red);
+}
+
+/* ============================================================
+   REV LIMITER (racing dashboard)
+   ============================================================ */
+
+.td-rev-limiter { display: flex; gap: 3px; height: 18px; padding: 8px 0; }
+.td-rev-segment { flex: 1; background: var(--td-bg-elev); border-radius: 2px; transition: background 0.08s; }
+.td-rev-segment.green { background: var(--td-green); }
+.td-rev-segment.yellow { background: var(--td-yellow); }
+.td-rev-segment.red { background: var(--td-red); }
+.td-rev-segment.blink { background: #fff; }
+
+/* Reutilizado por el modo HUD y otros — mantenemos hud.css / performance.css
+   tal cual, ya que son widgets muy específicos sin equivalente en Bootstrap. */
