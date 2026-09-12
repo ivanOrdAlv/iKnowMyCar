@@ -9,6 +9,7 @@ const HistoryView = (() => {
   let currentView = 'list';
   let selectedTripId = null;
   let chartInstances = {};
+  let mapInstance = null;
 
   let compareMode = false;
   let selectedCompareIds = new Set();
@@ -186,8 +187,14 @@ const HistoryView = (() => {
         <div class="event-count"><div class="event-count-num" style="color:#00FF41">${ec.hardAccels}</div><div style="font-size:10px;color:#666;">Acelerones</div></div>
         <div class="event-count"><div class="event-count-num" style="color:#FF9500">${ec.highThrottleMoments}</div><div style="font-size:10px;color:#666;">A fondo</div></div>
       </div></div>` : ''}
-      <div class="map-container"><div class="card-title" style="align-self:flex-start; margin-bottom:16px;">TRAZADO DE LA RUTA</div><div class="map-svg-container" id="map-svg"></div>
-        <div class="map-legend"><div class="map-legend-item"><div class="map-legend-dot" style="background:#007AFF"></div><span class="map-legend-text">INICIO</span></div><div class="map-legend-item"><div class="map-legend-dot" style="background:#FF3B30"></div><span class="map-legend-text">FIN</span></div></div>
+      <div class="map-container"><div class="card-title" style="align-self:flex-start; margin-bottom:16px;">TRAZADO DE LA RUTA</div>
+        <div id="map-leaflet" style="height:280px; border-radius:8px; overflow:hidden;"></div>
+        <div class="map-legend">
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:#007AFF"></div><span class="map-legend-text">INICIO</span></div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:#FF3B30"></div><span class="map-legend-text">FIN</span></div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:#00FF41"></div><span class="map-legend-text">LENTO</span></div>
+          <div class="map-legend-item"><div class="map-legend-dot" style="background:#FFD700"></div><span class="map-legend-text">RÁPIDO</span></div>
+        </div>
       </div>
       <div class="chart-container"><div class="chart-title">VELOCIDAD (KM/H)</div><canvas id="chart-speed"></canvas></div>
       <div class="chart-container"><div class="chart-title">RPM</div><canvas id="chart-rpm"></canvas></div>
@@ -195,14 +202,14 @@ const HistoryView = (() => {
       <div class="chart-container"><div class="chart-title">TEMP. REFRIGERANTE (°C)</div><canvas id="chart-temp"></canvas></div>
     `;
 
-    document.getElementById('btn-back').addEventListener('click', () => { currentView = 'list'; selectedTripId = null; destroyCharts(); render(); });
+    document.getElementById('btn-back').addEventListener('click', () => { currentView = 'list'; selectedTripId = null; destroyCharts(); destroyMap(); render(); });
 
     const opts = getChartOpts();
     createChart('chart-speed', labels, sampled.map(r => r.speed ?? 0), '#FFF', opts);
     createChart('chart-rpm', labels, sampled.map(r => r.rpm ?? 0), '#FF3B30', opts);
     createChart('chart-throttle', labels, sampled.map(r => r.throttle ?? 0), '#00FF41', opts);
     createChart('chart-temp', labels, sampled.map(r => r.coolant_temp ?? 0), '#FF9500', opts);
-    renderSVGMap(readings, events);
+    renderRouteMap(readings, events);
   }
 
   // ================================================================
@@ -212,7 +219,7 @@ const HistoryView = (() => {
   async function renderCompare() {
     removeCompareFAB();
     const content = document.getElementById('app-content');
-    destroyCharts();
+    destroyCharts(); destroyMap();
 
     const ids = [...selectedCompareIds];
     if (ids.length !== 2) { currentView = 'list'; render(); return; }
@@ -379,7 +386,7 @@ const HistoryView = (() => {
     `;
 
     document.getElementById('btn-back-compare').addEventListener('click', () => {
-      currentView = 'list'; selectedCompareIds.clear(); compareMode = false; destroyCharts(); render();
+      currentView = 'list'; selectedCompareIds.clear(); compareMode = false; destroyCharts(); destroyMap(); render();
     });
 
     document.getElementById('btn-export-compare').addEventListener('click', () => {
@@ -683,19 +690,99 @@ const HistoryView = (() => {
     container.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#111" rx="8"/>${lineA}${lineB}${markers}</svg>`;
   }
 
-  function renderSVGMap(readings, events) {
-    const container = document.getElementById('map-svg');
+  function renderRouteMap(readings, events) {
+    // Si ya había un mapa pintado en un render anterior, hay que destruirlo,
+    // o Leaflet se queja de "Map container is already initialized".
+    destroyMap();
+
+    const container = document.getElementById('map-leaflet');
     if (!container) return;
+
     const gps = readings.filter(r => r.latitude != null && r.longitude != null);
-    if (gps.length < 2) { container.innerHTML = '<div style="color:#333;text-align:center;font-weight:900;letter-spacing:2px;font-size:11px;">SIN DATOS GPS</div>'; return; }
-    const size = 300, pad = 20;
-    const lats = gps.map(p => p.latitude), lons = gps.map(p => p.longitude);
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLon = Math.min(...lons), maxLon = Math.max(...lons);
-    const latRange = maxLat - minLat || 0.0001, lonRange = maxLon - minLon || 0.0001, scale = Math.max(latRange, lonRange);
-    const points = gps.map(p => { const x = ((p.longitude - minLon) / scale) * (size - 2*pad) + pad + ((size - 2*pad) - (lonRange/scale) * (size - 2*pad))/2; const y = (size - pad) - (((p.latitude - minLat) / scale) * (size - 2*pad) + ((size - 2*pad) - (latRange/scale) * (size - 2*pad))/2); return `${x.toFixed(1)},${y.toFixed(1)}`; });
-    const s = points[0].split(','), e = points[points.length-1].split(',');
-    const evMk = events.map(ev => { const c = gps.reduce((b, r) => Math.abs(r.timestamp - ev.timestamp) < Math.abs(b.timestamp - ev.timestamp) ? r : b, gps[0]); const x = ((c.longitude - minLon) / scale) * (size - 2*pad) + pad + ((size - 2*pad) - (lonRange/scale) * (size - 2*pad))/2; const y = (size - pad) - (((c.latitude - minLat) / scale) * (size - 2*pad) + ((size - 2*pad) - (latRange/scale) * (size - 2*pad))/2); const col = ev.type === 'hardBrake' ? '#FF3B30' : ev.type === 'hardAccel' ? '#00FF41' : '#FF9500'; return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${col}" stroke="#FFF" stroke-width="1.5"/>`; }).join('');
-    container.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#111" rx="8"/><polyline points="${points.join(' ')}" fill="none" stroke="#00FF41" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${s[0]}" cy="${s[1]}" r="6" fill="#007AFF" stroke="#FFF" stroke-width="2"/><circle cx="${e[0]}" cy="${e[1]}" r="6" fill="#FF3B30" stroke="#FFF" stroke-width="2"/>${evMk}</svg>`;
+    if (gps.length < 2) {
+      container.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#333;text-align:center;font-weight:900;letter-spacing:2px;font-size:11px;">SIN DATOS GPS</div>';
+      return;
+    }
+
+    // Mapa base (OpenStreetMap, sin API key ni facturación)
+    mapInstance = L.map('map-leaflet', { zoomControl: true, attributionControl: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(mapInstance);
+
+    // Trazado coloreado por velocidad: un segmento de línea por cada par de
+    // puntos consecutivos, con color interpolado según lo rápido que ibas.
+    const maxSpeed = Math.max(...gps.map(p => p.speed || 0), 1);
+    for (let i = 1; i < gps.length; i++) {
+      const a = gps[i - 1], b = gps[i];
+      const speed = ((a.speed || 0) + (b.speed || 0)) / 2;
+      L.polyline(
+        [[a.latitude, a.longitude], [b.latitude, b.longitude]],
+        { color: speedToColor(speed, maxSpeed), weight: 5, opacity: 0.85, lineCap: 'round' }
+      ).addTo(mapInstance);
+    }
+
+    // Marcadores de inicio y fin
+    const start = gps[0], end = gps[gps.length - 1];
+    L.circleMarker([start.latitude, start.longitude], {
+      radius: 8, color: '#fff', weight: 2, fillColor: '#007AFF', fillOpacity: 1,
+    }).addTo(mapInstance).bindPopup('Inicio');
+    L.circleMarker([end.latitude, end.longitude], {
+      radius: 8, color: '#fff', weight: 2, fillColor: '#FF3B30', fillOpacity: 1,
+    }).addTo(mapInstance).bindPopup('Fin');
+
+    // Marcadores de eventos (frenazos, acelerones, acelerador a fondo),
+    // colocados en la posición GPS más cercana en el tiempo a cada evento
+    const eventColors = { hardBrake: '#FF3B30', hardAccel: '#00FF41', highThrottle: '#FF9500' };
+    for (const ev of events) {
+      const closest = gps.reduce((best, r) =>
+        Math.abs(r.timestamp - ev.timestamp) < Math.abs(best.timestamp - ev.timestamp) ? r : best, gps[0]);
+      const meta = EventDetector.EVENT_LABELS[ev.type];
+      L.circleMarker([closest.latitude, closest.longitude], {
+        radius: 6, color: '#fff', weight: 1.5, fillColor: eventColors[ev.type] || '#888', fillOpacity: 0.95,
+      }).addTo(mapInstance).bindPopup(`${meta ? meta.icon + ' ' + meta.label : ev.type}`);
+    }
+
+    // Encuadre automático para que se vea toda la ruta
+    const bounds = L.latLngBounds(gps.map(p => [p.latitude, p.longitude]));
+    mapInstance.fitBounds(bounds, { padding: [20, 20] });
+  }
+
+  /**
+   * Interpola un color verde→amarillo→rojo según la velocidad,
+   * relativa a la velocidad máxima alcanzada en el trayecto.
+   */
+  function speedToColor(speed, maxSpeed) {
+    const ratio = Math.min(Math.max(speed / maxSpeed, 0), 1);
+    if (ratio < 0.5) {
+      // Verde → Amarillo
+      const t = ratio / 0.5;
+      return interpolateHex('#00FF41', '#FFD700', t);
+    }
+    // Amarillo → Rojo
+    const t = (ratio - 0.5) / 0.5;
+    return interpolateHex('#FFD700', '#FF3B30', t);
+  }
+
+  function interpolateHex(hexA, hexB, t) {
+    const a = hexToRgb(hexA), b = hexToRgb(hexB);
+    const r = Math.round(a.r + (b.r - a.r) * t);
+    const g = Math.round(a.g + (b.g - a.g) * t);
+    const bl = Math.round(a.b + (b.b - a.b) * t);
+    return `rgb(${r},${g},${bl})`;
+  }
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+
+  function destroyMap() {
+    if (mapInstance) {
+      mapInstance.remove();
+      mapInstance = null;
+    }
   }
 
   function getChartOpts() {
@@ -739,7 +826,7 @@ const HistoryView = (() => {
     for (const k of Object.keys(chartInstances)) { if (chartInstances[k]) { chartInstances[k].destroy(); delete chartInstances[k]; } }
   }
 
-  function destroy() { destroyCharts(); removeCompareFAB(); compareMode = false; selectedCompareIds.clear(); }
+  function destroy() { destroyCharts(); destroyMap(); removeCompareFAB(); compareMode = false; selectedCompareIds.clear(); }
 
   return { render, destroy };
 })();
