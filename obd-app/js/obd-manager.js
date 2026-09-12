@@ -117,15 +117,15 @@ const OBDManager = (() => {
           const chars = await service.getCharacteristics();
           for (const char of chars) {
             if (char.uuid === known.tx) txCharacteristic = char;
-            if (char.uuid === known.rx && char.properties.has('notify')) rxCharacteristic = char;
+            if (char.uuid === known.rx && char.properties.notify) rxCharacteristic = char;
           }
-          if (txCharacteristic && !rxCharacteristic && txCharacteristic.properties.has('notify')) {
+          if (txCharacteristic && !rxCharacteristic && txCharacteristic.properties.notify) {
             rxCharacteristic = txCharacteristic;
           }
           if (!txCharacteristic || !rxCharacteristic) {
             for (const c of chars) {
-              if (!txCharacteristic && (c.properties.has('write') || c.properties.has('writeWithoutResponse'))) txCharacteristic = c;
-              if (!rxCharacteristic && c.properties.has('notify')) rxCharacteristic = c;
+              if (!txCharacteristic && (c.properties.write || c.properties.writeWithoutResponse)) txCharacteristic = c;
+              if (!rxCharacteristic && c.properties.notify) rxCharacteristic = c;
             }
           }
           if (txCharacteristic && rxCharacteristic) {
@@ -140,8 +140,8 @@ const OBDManager = (() => {
       const chars = await svc.getCharacteristics();
       let foundTx = null, foundRx = null;
       for (const c of chars) {
-        if (!foundTx && (c.properties.has('write') || c.properties.has('writeWithoutResponse'))) foundTx = c;
-        if (!foundRx && c.properties.has('notify')) foundRx = c;
+        if (!foundTx && (c.properties.write || c.properties.writeWithoutResponse)) foundTx = c;
+        if (!foundRx && c.properties.notify) foundRx = c;
       }
       if (foundTx && foundRx) {
         service = svc;
@@ -190,7 +190,7 @@ const OBDManager = (() => {
       currentResolve = resolve;
       const encoder = new TextEncoder();
       const data = encoder.encode(cmd + '\r');
-      if (txCharacteristic.properties.has('write')) {
+      if (txCharacteristic.properties.write) {
         await txCharacteristic.writeValue(data);
       } else {
         await txCharacteristic.writeValueWithoutResponse(data);
