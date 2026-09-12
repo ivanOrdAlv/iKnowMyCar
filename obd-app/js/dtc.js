@@ -1,5 +1,8 @@
 /**
  * DTCView - Diagnóstico de ECU con búsqueda en Google.
+ * Estructura con componentes nativos de Bootstrap (spinner, list-group,
+ * botones btn-primary/btn-danger, que ya heredan el verde/rojo racing
+ * porque theme.css redefine --bs-primary y --bs-danger).
  */
 
 const DTCView = (() => {
@@ -9,15 +12,15 @@ const DTCView = (() => {
 
   async function render() {
     const content = document.getElementById('app-content');
+    const centered = 'd-flex flex-column align-items-center justify-content-center text-center';
+    const minH = 'style="min-height: calc(100vh - var(--td-header-height) - var(--td-nav-height) - 2rem);"';
 
     if (!OBDManager.isConnected) {
       content.innerHTML = `
-        <div style="text-align:center; padding:40px 0;">
-          <h2 style="font-size:22px; font-weight:900; margin-bottom:8px;">DIAGNÓSTICO</h2>
-          <div class="empty-state">
-            <div class="empty-state-icon">🔌</div>
-            <p class="empty-state-text" style="font-size:14px; letter-spacing:1px; color:#444;">OBD OFFLINE</p>
-          </div>
+        <div class="${centered}" ${minH}>
+          <h2 class="fw-bold td-mono mb-3" style="font-size:1.3rem; letter-spacing:1px;">DIAGNÓSTICO</h2>
+          <div class="fs-1 mb-2">🔌</div>
+          <p class="text-secondary fw-bold small" style="letter-spacing:1px;">OBD OFFLINE</p>
         </div>
       `;
       return;
@@ -25,9 +28,9 @@ const DTCView = (() => {
 
     if (scanning) {
       content.innerHTML = `
-        <div class="dtc-center">
-          <div class="spinner"></div>
-          <p style="color:#00FF41; font-weight:900; letter-spacing:2px; font-size:11px; margin-top:16px;">ESCANEANDO CENTRALITA...</p>
+        <div class="${centered}" ${minH}>
+          <div class="spinner-border text-success mb-3" role="status"></div>
+          <p class="text-success fw-bold td-mono small mb-0" style="letter-spacing:2px;">ESCANEANDO CENTRALITA...</p>
         </div>
       `;
       return;
@@ -35,48 +38,42 @@ const DTCView = (() => {
 
     if (codes.length > 0) {
       content.innerHTML = `
-        <div style="padding:0 4px;">
-          <div class="dtc-list-header">ANOMALÍAS DETECTADAS (${codes.length})</div>
+        <div class="fw-bold td-mono mb-3" style="letter-spacing:1px;">ANOMALÍAS DETECTADAS (${codes.length})</div>
+        <div class="d-flex flex-column gap-2 mb-3">
           ${codes.map(code => {
             const info = DTCData.getDTCDescription(code);
             return `
-              <div class="dtc-card">
-                <div class="dtc-card-header">
-                  <span class="dtc-code">${code}</span>
-                  <a class="dtc-info-link" href="https://www.google.com/search?q=obd+code+${code}" target="_blank" rel="noopener">MÁS INFO ›</a>
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge fs-6 td-mono" style="background:var(--td-red);">${code}</span>
+                    <a class="small fw-bold link-light" href="https://www.google.com/search?q=obd+code+${code}" target="_blank" rel="noopener">MÁS INFO ›</a>
+                  </div>
+                  <div class="fw-bold mb-1">${info.title}</div>
+                  <div class="text-secondary small">${info.desc}</div>
                 </div>
-                <div class="dtc-card-title">${info.title}</div>
-                <div class="dtc-card-desc">${info.desc}</div>
               </div>
             `;
           }).join('')}
         </div>
-        <div class="dtc-footer">
-          <button class="btn-danger" id="btn-clear-dtc">BORRAR CÓDIGOS</button>
-          <button class="btn-secondary" id="btn-rescan" style="margin-top:10px; width:100%; text-align:center;">REESCANEAR</button>
-        </div>
+        <button class="btn btn-danger w-100 fw-bold mb-2" id="btn-clear-dtc">BORRAR CÓDIGOS</button>
+        <button class="btn btn-outline-light w-100 fw-bold" id="btn-rescan">REESCANEAR</button>
       `;
     } else {
       content.innerHTML = `
-        <div class="dtc-center">
-          <div class="dtc-status-glow ${lastScan ? 'ok' : ''}"></div>
-          <div class="dtc-main-msg">${lastScan ? 'MOTOR EN ESTADO ÓPTIMO' : 'DIAGNÓSTICO LISTO'}</div>
-          ${lastScan ? `<div class="dtc-sub-msg">CHEQUEO REALIZADO A LAS ${lastScan}</div>` : ''}
-        </div>
-        <div class="dtc-footer">
-          <button class="btn-primary" id="btn-scan-dtc">ESCANEAR VEHÍCULO</button>
+        <div class="${centered}" ${minH}>
+          <div class="td-status-glow ${lastScan ? 'ok' : ''}">${lastScan ? '✅' : '🔍'}</div>
+          <div class="fw-bold td-mono mb-1" style="letter-spacing:1px;">${lastScan ? 'MOTOR EN ESTADO ÓPTIMO' : 'DIAGNÓSTICO LISTO'}</div>
+          ${lastScan ? `<div class="text-secondary small fw-bold mb-4" style="letter-spacing:1px;">CHEQUEO REALIZADO A LAS ${lastScan}</div>` : '<div class="mb-4"></div>'}
+          <button class="btn btn-primary fw-bold px-4" id="btn-scan-dtc">ESCANEAR VEHÍCULO</button>
         </div>
       `;
     }
 
-    // Listeners
     const scanBtn = document.getElementById('btn-scan-dtc') || document.getElementById('btn-rescan');
     if (scanBtn) scanBtn.addEventListener('click', scanDTCs);
     const clearBtn = document.getElementById('btn-clear-dtc');
     if (clearBtn) clearBtn.addEventListener('click', clearDTCs);
-    if (document.getElementById('btn-rescan')) {
-      document.getElementById('btn-rescan').addEventListener('click', scanDTCs);
-    }
   }
 
   async function scanDTCs() {
@@ -95,13 +92,14 @@ const DTCView = (() => {
   }
 
   async function clearDTCs() {
-    const modal = document.getElementById('modal-confirm');
+    const modalEl = document.getElementById('modal-confirm');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     document.getElementById('confirm-title').textContent = 'BORRAR ECU';
     document.getElementById('confirm-message').textContent = '¿Limpiar todos los códigos de error?';
-    modal.classList.remove('hidden');
+    modal.show();
 
     const cleanup = () => {
-      modal.classList.add('hidden');
+      modal.hide();
       document.getElementById('btn-confirm-ok').replaceWith(document.getElementById('btn-confirm-ok').cloneNode(true));
       document.getElementById('btn-confirm-cancel').replaceWith(document.getElementById('btn-confirm-cancel').cloneNode(true));
     };

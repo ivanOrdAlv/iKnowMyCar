@@ -368,3 +368,26 @@ body {
   font-size: 1.1rem;
   font-weight: 800;
 }
+
+/* ============================================================
+   DTC VIEW — glow de estado (motor OK / listo para escanear)
+   ============================================================ */
+
+.td-status-glow {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin: 0 auto 1.25rem;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+  border: 2px solid var(--td-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+}
+
+.td-status-glow.ok {
+  background: radial-gradient(circle, rgba(0,255,65,0.18) 0%, transparent 70%);
+  border-color: var(--td-green);
+  box-shadow: 0 0 30px rgba(0,255,65,0.25);
+}
