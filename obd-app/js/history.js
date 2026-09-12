@@ -367,7 +367,7 @@ const HistoryView = (() => {
       <!-- MAPA -->
       <div class="map-container">
         <div class="card-title" style="align-self:flex-start; margin-bottom:16px;">TRAZADOS COMPARADOS</div>
-        <div class="map-svg-container" id="compare-map-svg"></div>
+        <div id="map-compare-leaflet" style="height:280px; border-radius:8px; overflow:hidden;"></div>
         <div class="map-legend">
           <div class="map-legend-item"><div class="map-legend-dot" style="background:${colorA}"></div><span class="map-legend-text">${nameA}</span></div>
           <div class="map-legend-item"><div class="map-legend-dot" style="background:${colorB}"></div><span class="map-legend-text">${nameB}</span></div>
@@ -414,7 +414,7 @@ const HistoryView = (() => {
     createCompareChart('cmp-temp', labels, tempA, tempB, colorA, colorB, nameA, nameB);
 
     // Mapa
-    renderCompareSVGMap(readingsA, readingsB, colorA, colorB);
+    renderCompareRouteMap(readingsA, readingsB, colorA, colorB, nameA, nameB);
   }
 
   // ================================================================
@@ -654,40 +654,56 @@ const HistoryView = (() => {
     });
   }
 
-  function renderCompareSVGMap(readingsA, readingsB, colorA, colorB) {
-    const container = document.getElementById('compare-map-svg');
+  function renderCompareRouteMap(readingsA, readingsB, colorA, colorB, nameA, nameB) {
+    destroyMap();
+
+    const container = document.getElementById('map-compare-leaflet');
     if (!container) return;
 
     const gpsA = readingsA.filter(r => r.latitude != null && r.longitude != null);
     const gpsB = readingsB.filter(r => r.latitude != null && r.longitude != null);
     if (gpsA.length < 2 && gpsB.length < 2) {
-      container.innerHTML = '<div style="color:#333; text-align:center; font-weight:900; letter-spacing:2px; font-size:11px;">SIN DATOS GPS</div>';
+      container.innerHTML = '<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#333;text-align:center;font-weight:900;letter-spacing:2px;font-size:11px;">SIN DATOS GPS</div>';
       return;
     }
 
-    const allPts = [...gpsA, ...gpsB];
-    const size = 300, pad = 20;
-    const lats = allPts.map(p => p.latitude), lons = allPts.map(p => p.longitude);
-    const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-    const minLon = Math.min(...lons), maxLon = Math.max(...lons);
-    const latRange = maxLat - minLat || 0.0001, lonRange = maxLon - minLon || 0.0001;
-    const scale = Math.max(latRange, lonRange);
+    mapInstance = L.map('map-compare-leaflet', { zoomControl: true, attributionControl: true });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(mapInstance);
 
-    const toXY = (p) => {
-      const x = ((p.longitude - minLon) / scale) * (size - 2 * pad) + pad + ((size - 2 * pad) - (lonRange / scale) * (size - 2 * pad)) / 2;
-      const y = (size - pad) - (((p.latitude - minLat) / scale) * (size - 2 * pad) + ((size - 2 * pad) - (latRange / scale) * (size - 2 * pad)) / 2);
-      return { x: x.toFixed(1), y: y.toFixed(1) };
+    const drawRoute = (gps, color, label) => {
+      if (gps.length < 2) return [];
+      L.polyline(gps.map(p => [p.latitude, p.longitude]), {
+        color, weight: 5, opacity: 0.85, lineCap: 'round',
+      }).addTo(mapInstance);
+
+      // Inicio: círculo. Fin: cuadrado (mismo criterio visual que ya usabas en el SVG)
+      const start = gps[0], end = gps[gps.length - 1];
+      L.circleMarker([start.latitude, start.longitude], {
+        radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1,
+      }).addTo(mapInstance).bindPopup(`Inicio — ${label}`);
+      L.marker([end.latitude, end.longitude], {
+        icon: L.divIcon({
+          className: '',
+          html: `<div style="width:14px;height:14px;background:${color};border:2px solid #fff;border-radius:3px;"></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
+        }),
+      }).addTo(mapInstance).bindPopup(`Fin — ${label}`);
+
+      return gps.map(p => [p.latitude, p.longitude]);
     };
 
-    const ptsA = gpsA.map(toXY), ptsB = gpsB.map(toXY);
-    const lineA = ptsA.length >= 2 ? `<polyline points="${ptsA.map(p => p.x + ',' + p.y).join(' ')}" fill="none" stroke="${colorA}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>` : '';
-    const lineB = ptsB.length >= 2 ? `<polyline points="${ptsB.map(p => p.x + ',' + p.y).join(' ')}" fill="none" stroke="${colorB}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>` : '';
+    const allPoints = [
+      ...drawRoute(gpsA, colorA, nameA),
+      ...drawRoute(gpsB, colorB, nameB),
+    ];
 
-    let markers = '';
-    if (ptsA.length >= 2) { markers += `<circle cx="${ptsA[0].x}" cy="${ptsA[0].y}" r="5" fill="${colorA}" stroke="#FFF" stroke-width="1.5"/>`; markers += `<circle cx="${ptsA[ptsA.length-1].x}" cy="${ptsA[ptsA.length-1].y}" r="5" fill="${colorA}" stroke="#000" stroke-width="1.5"/>`; }
-    if (ptsB.length >= 2) { markers += `<rect x="${parseFloat(ptsB[0].x)-4}" y="${parseFloat(ptsB[0].y)-4}" width="8" height="8" fill="${colorB}" stroke="#FFF" stroke-width="1.5" rx="1"/>`; markers += `<rect x="${parseFloat(ptsB[ptsB.length-1].x)-4}" y="${parseFloat(ptsB[ptsB.length-1].y)-4}" width="8" height="8" fill="${colorB}" stroke="#000" stroke-width="1.5" rx="1"/>`; }
-
-    container.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="#111" rx="8"/>${lineA}${lineB}${markers}</svg>`;
+    if (allPoints.length > 0) {
+      mapInstance.fitBounds(L.latLngBounds(allPoints), { padding: [20, 20] });
+    }
   }
 
   function renderRouteMap(readings, events) {
