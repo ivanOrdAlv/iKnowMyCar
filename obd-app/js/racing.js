@@ -1,7 +1,9 @@
 /**
  * RacingView - Dashboard de carreras tipo F1.
  * Rev limiter LED, barras verticales throttle/brake, gear indicator, speed.
- * Polling ultra-rápido (200ms).
+ * Polling ultra-rápido (200ms). Estructura con utilidades de Bootstrap;
+ * los widgets sin equivalente (rev-limiter, v-bars, gear circle) usan
+ * las clases td-* de css/theme.css.
  */
 
 const RacingView = (() => {
@@ -12,72 +14,74 @@ const RacingView = (() => {
 
   function render() {
     const content = document.getElementById('app-content');
-    content.innerHTML = '';
-
-    const container = document.createElement('div');
-    container.className = 'racing-container';
-    container.id = 'racing-container';
 
     if (!OBDManager.isConnected) {
-      container.innerHTML = `
-        <div class="disconnect-overlay">
-          <div class="warning-box">
-            <div class="warning-title">SISTEMA OFFLINE</div>
-            <div class="warning-text">CONECTA EL ELM327 EN EL DASHBOARD PRINCIPAL</div>
+      content.innerHTML = `
+        <div class="d-flex align-items-center justify-content-center text-center" style="min-height: calc(100vh - var(--td-header-height) - var(--td-nav-height) - 2rem);">
+          <div class="border border-danger-subtle rounded p-4 bg-black bg-opacity-50">
+            <div class="fw-bold td-mono mb-2" style="color:var(--td-red); letter-spacing:2px;">SISTEMA OFFLINE</div>
+            <div class="text-secondary small fw-bold" style="letter-spacing:1px;">CONECTA EL ELM327 EN EL DASHBOARD PRINCIPAL</div>
           </div>
         </div>
       `;
-      content.appendChild(container);
       return;
     }
 
-    container.innerHTML = `
-      <div class="rev-limiter" id="rev-limiter"></div>
-      <div class="racing-main">
-        <div class="v-bar">
-          <span class="v-bar-label">THR</span>
-          <div class="v-bar-bg">
-            <div class="v-bar-fill" id="vbar-thr" style="height:0%; background:#00FF41;"></div>
+    content.innerHTML = `
+      <div class="td-rev-limiter mb-3" id="rev-limiter"></div>
+
+      <div class="d-flex align-items-center justify-content-around mb-4">
+        <div class="text-center">
+          <div class="td-vbar-label mb-1">THR</div>
+          <div class="td-vbar-track">
+            <div class="td-vbar-fill" id="vbar-thr" style="height:0%; background:var(--td-green);"></div>
           </div>
-          <span class="v-bar-value" id="vbar-thr-val">0%</span>
+          <div class="td-vbar-value mt-1" id="vbar-thr-val">0%</div>
         </div>
-        <div class="racing-center">
-          <div class="gear-circle">
-            <span class="gear-text" id="gear-display">N</span>
+
+        <div class="d-flex flex-column align-items-center gap-3">
+          <div class="td-gear-circle">
+            <span class="td-gear-text" id="gear-display">N</span>
           </div>
-          <div class="racing-speed">
-            <div class="racing-speed-value" id="race-speed">0</div>
-            <div class="racing-speed-label">KM/H</div>
+          <div class="text-center">
+            <div class="td-mono fw-bold" style="font-size:3.5rem; line-height:1;" id="race-speed">0</div>
+            <div class="text-secondary fw-bold small" style="letter-spacing:3px;">KM/H</div>
           </div>
         </div>
-        <div class="v-bar right">
-          <span class="v-bar-label">BRK</span>
-          <div class="v-bar-bg">
-            <div class="v-bar-fill" id="vbar-brk" style="height:0%; background:#FF3B30;"></div>
+
+        <div class="text-center">
+          <div class="td-vbar-label mb-1">BRK</div>
+          <div class="td-vbar-track">
+            <div class="td-vbar-fill" id="vbar-brk" style="height:0%; background:var(--td-red);"></div>
           </div>
-          <span class="v-bar-value" id="vbar-brk-val">0%</span>
+          <div class="td-vbar-value mt-1" id="vbar-brk-val">0%</div>
         </div>
       </div>
-      <div class="data-strip">
-        <div class="data-block">
-          <div class="data-key">WATER</div>
-          <div class="data-val" id="race-temp">0°C</div>
+
+      <div class="row g-2 td-data-strip text-center mb-4">
+        <div class="col-4">
+          <div class="td-data-card py-2">
+            <div class="td-data-key">WATER</div>
+            <div class="td-data-val" id="race-temp">0°C</div>
+          </div>
         </div>
-        <div class="data-block">
-          <div class="data-key">ENGINE LOAD</div>
-          <div class="data-val" id="race-load">0%</div>
+        <div class="col-4">
+          <div class="td-data-card py-2">
+            <div class="td-data-key">ENGINE LOAD</div>
+            <div class="td-data-val" id="race-load">0%</div>
+          </div>
         </div>
-        <div class="data-block">
-          <div class="data-key">REAL RPM</div>
-          <div class="data-val" id="race-rpm">0</div>
+        <div class="col-4">
+          <div class="td-data-card py-2">
+            <div class="td-data-key">REAL RPM</div>
+            <div class="td-data-val" id="race-rpm">0</div>
+          </div>
         </div>
       </div>
-      <button class="racing-exit-btn" id="racing-exit">← VOLVER</button>
+
+      <button class="btn btn-outline-light w-100 fw-bold" id="racing-exit">← VOLVER</button>
     `;
 
-    content.appendChild(container);
-
-    // Botón de volver
     document.getElementById('racing-exit').addEventListener('click', () => {
       stopPolling();
       App.navigateTo('dashboard');
@@ -100,7 +104,7 @@ const RacingView = (() => {
 
     let html = '';
     for (let i = 0; i < segments; i++) {
-      let cls = 'rev-segment';
+      let cls = 'td-rev-segment';
       if (i < active) {
         if (isRevLimit && blinkPhase && i >= segments - 4) {
           cls += ' blink';
@@ -148,7 +152,6 @@ const RacingView = (() => {
         }
         lastSpeed = speed;
 
-        // Gear estimado por velocidad (usando SettingsManager)
         const gear = SettingsManager.calculateGear(speed);
 
         data = { rpm: rpm || 0, speed: speed || 0, throttle: throttle || 0, brake: brakeValue, temp, load, gear };
@@ -168,11 +171,9 @@ const RacingView = (() => {
     const tempEl = document.getElementById('race-temp');
     if (tempEl) {
       tempEl.textContent = `${Math.round(data.temp)}°C`;
-      if (data.temp > 100) tempEl.style.color = '#FF3B30';
-      else tempEl.style.color = '#FFF';
+      tempEl.style.color = data.temp > 100 ? 'var(--td-red)' : '';
     }
 
-    // Vertical bars
     const thrFill = document.getElementById('vbar-thr');
     const brkFill = document.getElementById('vbar-brk');
     if (thrFill) thrFill.style.height = `${Math.min(data.throttle, 100)}%`;
@@ -180,7 +181,6 @@ const RacingView = (() => {
     set('vbar-thr-val', `${Math.round(data.throttle)}%`);
     set('vbar-brk-val', `${Math.round(data.brake)}%`);
 
-    // Rev limiter
     renderRevLimiter(data.rpm);
   }
 

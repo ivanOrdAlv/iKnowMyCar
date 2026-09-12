@@ -303,3 +303,68 @@ body {
 
 /* Reutilizado por el modo HUD y otros — mantenemos hud.css / performance.css
    tal cual, ya que son widgets muy específicos sin equivalente en Bootstrap. */
+
+   /* ============================================================
+   RACING DASHBOARD — barras verticales (throttle/brake) y marcha
+   ============================================================ */
+
+.td-vbar-track {
+  width: 44px;
+  height: 220px;
+  background: var(--td-bg-elev);
+  border: 1px solid var(--td-border);
+  border-radius: var(--td-radius);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.td-vbar-fill {
+  width: 100%;
+  transition: height 0.1s linear;
+}
+
+.td-vbar-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--td-text-muted);
+}
+
+.td-vbar-value {
+  font-family: var(--td-font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.td-gear-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid var(--td-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--td-bg-elev);
+}
+
+.td-gear-text {
+  font-family: var(--td-font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.td-data-strip .td-data-key {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--td-text-muted);
+}
+
+.td-data-strip .td-data-val {
+  font-family: var(--td-font-display);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
